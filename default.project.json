@@ -3,13 +3,26 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
+      "Assets": {
+        "$path": "src/ReplicatedStorage/Assets",
+        "$ignoreUnknownInstances": true
+      },
       "Modules": {
         "$path": "src/ReplicatedStorage/Modules"
       },
       "Remotes": {
-        "$path": "src/ReplicatedStorage/Remotes",
+        "$className": "Folder",
         "PurchaseRequest": {
           "$className": "RemoteEvent"
+        },
+        "AutoSave": {
+          "$className": "RemoteEvent"
+        },
+        "BalancePush": {
+          "$className": "RemoteEvent"
+        },
+        "BalancePull": {
+          "$className": "RemoteFunction"
         }
       }
     },
@@ -19,25 +32,28 @@
       }
     },
     "StarterGui": {
-      "MainMenu": {
-        "$className": "ScreenGui",
-        "$path": "src/StarterGui/UI/MainMenu"
-      },
-      "Shop": {
-        "$className": "ScreenGui",
-        "$path": "src/StarterGui/UI/Shop"
-      },
-      "Inventory": {
-        "$className": "ScreenGui",
-        "$path": "src/StarterGui/UI/Inventory"
-      },
-      "HUD": {
-        "$className": "ScreenGui",
-        "$path": "src/StarterGui/UI/HUD"
-      },
-      "Settings": {
-        "$className": "ScreenGui",
-        "$path": "src/StarterGui/UI/Settings"
+      "UI": {
+        "$className": "Folder",
+        "MainMenu": {
+          "$className": "ScreenGui",
+          "$path": "src/StarterGui/UI/MainMenu"
+        },
+        "Shop": {
+          "$className": "ScreenGui",
+          "$path": "src/StarterGui/UI/Shop"
+        },
+        "Inventory": {
+          "$className": "ScreenGui",
+          "$path": "src/StarterGui/UI/Inventory"
+        },
+        "HUD": {
+          "$className": "ScreenGui",
+          "$path": "src/StarterGui/UI/HUD"
+        },
+        "Settings": {
+          "$className": "ScreenGui",
+          "$path": "src/StarterGui/UI/Settings"
+        }
       }
     },
     "StarterPlayer": {

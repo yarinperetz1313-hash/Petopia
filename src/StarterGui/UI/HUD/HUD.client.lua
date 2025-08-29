@@ -17,6 +17,7 @@
 ------------------------------
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ModulesFolder = ReplicatedStorage:WaitForChild("Modules")
