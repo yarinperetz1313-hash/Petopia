@@ -69,14 +69,15 @@ end
 ------------------------------
 balanceLabel = Instance.new("TextLabel")
 balanceLabel.Size = UDim2.new(0,200,0,30)
-balanceLabel.Position = UDim2.new(0,10,0,10)
+balanceLabel.Position = UDim2.new(1,-10,0,60)
+balanceLabel.AnchorPoint = Vector2.new(1,0)
 balanceLabel.BackgroundTransparency = 1
 balanceLabel.Font = Enum.Font.GothamBold
 balanceLabel.TextSize = 22
 balanceLabel.TextColor3 = COLORS.White
 balanceLabel.TextStrokeTransparency = 0
 balanceLabel.TextStrokeColor3 = COLORS.Black
-balanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+balanceLabel.TextXAlignment = Enum.TextXAlignment.Right
 balanceLabel.Text = "🪙 PetBux: 0"
 balanceLabel.Parent = mainGui
 
@@ -91,11 +92,18 @@ UIController.Events.PetBuxChanged.Event:Connect(function(amount)
     balanceLabel.Text = string.format("🪙 PetBux: %,d", amount)
 end)
 
+-- initialise label with current balance in case state updated before connection
+balanceLabel.Text = string.format("🪙 PetBux: %,d", UIController.State.PetBux)
+
+UIController.Events.DebugOverlayToggled.Event:Connect(function(enabled)
+    debugLabel.Visible = enabled
+end)
+
 ------------------------------
 -- 4. Debug Overlay ----------
 ------------------------------
 debugLabel = Instance.new("TextLabel")
-debugLabel.Size = UDim2.new(0,450,0,60)
+debugLabel.Size = UDim2.new(0,600,0,60)
 debugLabel.Position = UDim2.new(0,10,1,-70)
 debugLabel.BackgroundTransparency = 1
 debugLabel.Font = Enum.Font.Code
@@ -107,18 +115,19 @@ debugLabel.TextXAlignment = Enum.TextXAlignment.Left
 debugLabel.TextYAlignment = Enum.TextYAlignment.Top
 debugLabel.Parent = mainGui
 
+debugLabel.Visible = UIController.State.DebugEnabled
 debugLabel.Text = ""
 
 RunService.RenderStepped:Connect(function()
+    if not UIController.State.DebugEnabled then return end
     local s = UIController.State
     debugLabel.Text = string.format(
-        "Shop: %s | Tab: %s | Items: %d | PetBux: %d | Pending: %s\n" ..
-        "Inventory: %s | Slots: %d/%d\n" ..
-        "Settings: %s",
-        tostring(s.ShopOpen), s.ShopTab, s.ShopItems or 0, s.PetBux,
-        s.PendingItem or "-",
+        "PetBux: %d | Shop: %s (Tab: %s, Items: %d) | Inventory: %s (Slots: %d/%d) | Settings: %s | Marketplace: %s",
+        s.PetBux,
+        tostring(s.ShopOpen), s.ShopTab, s.ShopItems or 0,
         tostring(s.InventoryOpen), s.InventorySlots or 0, s.InventoryCapacity or 0,
-        tostring(s.SettingsOpen)
+        tostring(s.SettingsOpen),
+        s.MarketplaceState or "idle"
     )
 end)
 

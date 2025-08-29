@@ -110,11 +110,14 @@ buildUI = function()
     mainGui.ResetOnSpawn = false
     mainGui.IgnoreGuiInset = true
     mainGui.Enabled = false
+    mainGui:ClearAllChildren()
 
     window = Instance.new("Frame")
     window.Size = UDim2.new(0.55, 0, 0.6, 0)
-    window.Position = UDim2.new(0.225, 0, 0.2, 0)
+    window.Position = UDim2.new(0.5, 0, 0.5, 0)
+    window.AnchorPoint = Vector2.new(0.5,0.5)
     window.BackgroundColor3 = COLORS.Background
+    window.BackgroundTransparency = 0.25
     window.BorderSizePixel = 0
     window.Visible = false
     window.Parent = mainGui
@@ -160,9 +163,10 @@ buildUI = function()
 
     closeButton = Instance.new("TextButton")
     closeButton.Size = UDim2.new(0, 40, 0, 40)
-    closeButton.Position = UDim2.new(1, -45, 0.1, 0)
+    closeButton.Position = UDim2.new(1, -5, 0, 5)
+    closeButton.AnchorPoint = Vector2.new(1,0)
     closeButton.BackgroundColor3 = COLORS.Red
-    closeButton.Text = "✖"
+    closeButton.Text = "❌"
     closeButton.Font = Enum.Font.GothamBold
     closeButton.TextColor3 = COLORS.White
     closeButton.TextSize = 24
@@ -276,9 +280,11 @@ openInventory = function()
     window.Visible = true
     window.Size = UDim2.new(0, 0, 0, 0)
     window.Position = UDim2.new(0.5, 0, 0.5, 0)
+    window.BackgroundTransparency = 1
     TweenService:Create(window, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(0.55, 0, 0.6, 0),
-        Position = UDim2.new(0.225, 0, 0.2, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        BackgroundTransparency = 0.25,
     }):Play()
 end
 
@@ -288,6 +294,7 @@ closeInventory = function()
     TweenService:Create(window, TweenInfo.new(0.2), {
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0),
+        BackgroundTransparency = 1,
     }):Play()
     task.delay(0.2, function()
         window.Visible = false
@@ -311,7 +318,8 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then
         return
     end
-    if input.KeyCode == Enum.KeyCode.I then
+    local invKey = UIController.State.Keybinds and UIController.State.Keybinds.Inventory or Enum.KeyCode.I
+    if input.KeyCode == invKey then
         toggleInventory()
     elseif input.KeyCode == Enum.KeyCode.Escape and invState.Visible then
         closeInventory()

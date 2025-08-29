@@ -95,7 +95,7 @@ local COLORS = {
     Green = Color3.fromRGB(60,200,100),
 }
 
-local TAB_ORDER = {"Pets","Items","Upgrades"}
+local TAB_ORDER = {"Pets","Items","Upgrades","Marketplace"}
 local TAB_DATA = {
     Pets = {
         {id="puppy",name="Puppy",price=100},
@@ -110,15 +110,19 @@ local TAB_DATA = {
         {id="slot",name="Extra Slot",price=500},
         {id="speed",name="Pet Speed",price=300},
     },
+    Marketplace = {},
 }
 
 ---------------------------------------------------------------
 -- 2. State ----------------------------------------------------
 ---------------------------------------------------------------
-local shopState = { Visible=false, ActiveTab="Pets", Balance=1245, PendingItem=nil }
+local shopState = { Visible=false, ActiveTab="Pets", PendingItem=nil }
+UIController.State.ShopOpen = false
+UIController.State.ShopTab = "Pets"
+UIController.State.ShopItems = #TAB_DATA.Pets
 
 local mainGui,window,dragBar,closeButton,tabBar,contentFrame,grid,balanceLabel
-local debugLabel,popupFrame,popupText,popupYes,popupNo
+local debugLabel,popupFrame,popupText,popupYes,popupNo,popupBuy
 
 local buildUI,switchTab,rebuildGrid,openShop,closeShop,toggleShop,showPopup,hidePopup,ensureGui
 
@@ -195,8 +199,9 @@ end
 ---------------------------------------------------------------
 buildUI=function()
     mainGui=script.Parent; mainGui.Name=GUI_NAME; mainGui.ResetOnSpawn=false; mainGui.IgnoreGuiInset=true; mainGui.Enabled=false
+    mainGui:ClearAllChildren()
     window=Instance.new("Frame",mainGui); window.Size=UDim2.new(0.55,0,0.6,0); window.Position=UDim2.new(0.225,0,0.2,0)
-    window.BackgroundColor3=COLORS.Background; window.BorderSizePixel=0; window.Visible=false
+    window.BackgroundColor3=COLORS.Background; window.BackgroundTransparency=0.25; window.BorderSizePixel=0; window.Visible=false
     Instance.new("UICorner",window).CornerRadius=UDim.new(0,12)
     local shadow=Instance.new("ImageLabel",window)
     shadow.ZIndex=-1; shadow.BackgroundTransparency=1; shadow.Image="rbxassetid://1316045217"; shadow.ImageColor3=COLORS.Black
@@ -209,9 +214,10 @@ buildUI=function()
     title.Text="🪙 PetBux Shop"; title.Font=Enum.Font.GothamBlack; title.TextSize=32
     title.TextColor3=COLORS.White; title.TextStrokeColor3=COLORS.Black; title.TextStrokeTransparency=0; title.TextXAlignment=Enum.TextXAlignment.Left
     closeButton=Instance.new("TextButton",dragBar)
-    closeButton.Size=UDim2.new(0,40,0,40); closeButton.Position=UDim2.new(1,-45,0.1,0)
+    closeButton.Size=UDim2.new(0,40,0,40); closeButton.Position=UDim2.new(1,-5,0,5); closeButton.AnchorPoint=Vector2.new(1,0)
     closeButton.BackgroundColor3=COLORS.Red; closeButton.Text="✖"; closeButton.Font=Enum.Font.GothamBold; closeButton.TextColor3=COLORS.White
     closeButton.TextSize=24; closeButton.TextStrokeColor3=COLORS.Black; closeButton.TextStrokeTransparency=0
+    closeButton:ClearAllChildren()
     Instance.new("UICorner",closeButton).CornerRadius=UDim.new(0,8)
     closeButton.MouseEnter:Connect(function() TweenService:Create(closeButton,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Red:lerp(COLORS.White,0.2)}):Play() end)
     closeButton.MouseLeave:Connect(function() TweenService:Create(closeButton,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Red}):Play() end)
@@ -228,12 +234,13 @@ buildUI=function()
     balanceLabel.Size=UDim2.new(0,200,0,30); balanceLabel.Position=UDim2.new(1,-210,0,10); balanceLabel.BackgroundTransparency=1
     balanceLabel.Font=Enum.Font.GothamBold; balanceLabel.TextSize=20; balanceLabel.TextColor3=COLORS.White
     balanceLabel.TextStrokeColor3=COLORS.Black; balanceLabel.TextStrokeTransparency=0; balanceLabel.TextXAlignment=Enum.TextXAlignment.Right
+    balanceLabel.Text=string.format("PetBux: %,d",UIController.State.PetBux)
     debugLabel=Instance.new("TextLabel",mainGui)
     debugLabel.Size=UDim2.new(0,400,0,20); debugLabel.Position=UDim2.new(0,10,1,-30); debugLabel.BackgroundTransparency=1
     debugLabel.Font=Enum.Font.Code; debugLabel.TextSize=14; debugLabel.TextColor3=COLORS.White
     debugLabel.TextStrokeColor3=COLORS.Black; debugLabel.TextStrokeTransparency=0; debugLabel.TextXAlignment=Enum.TextXAlignment.Left
     popupFrame=Instance.new("Frame",mainGui); popupFrame.Size=UDim2.new(0.4,0,0.25,0); popupFrame.Position=UDim2.new(0.3,0,0.375,0)
-    popupFrame.BackgroundColor3=COLORS.Background; popupFrame.BorderSizePixel=0; popupFrame.Visible=false
+    popupFrame.BackgroundColor3=COLORS.Background; popupFrame.BackgroundTransparency=0.25; popupFrame.BorderSizePixel=0; popupFrame.Visible=false
     Instance.new("UICorner",popupFrame).CornerRadius=UDim.new(0,12)
     local pShadow=shadow:Clone(); pShadow.Size=UDim2.new(1,20,1,20); pShadow.Position=UDim2.new(0,-10,0,-10); pShadow.Parent=popupFrame
     popupText=Instance.new("TextLabel",popupFrame)
@@ -248,12 +255,22 @@ buildUI=function()
     popupNo.Size=UDim2.new(0,100,0,40); popupNo.Position=UDim2.new(0.75,-50,1,-60); popupNo.BackgroundColor3=COLORS.Red
     popupNo.Text="No"; popupNo.Font=Enum.Font.GothamBold; popupNo.TextSize=22; popupNo.TextColor3=COLORS.White
     popupNo.TextStrokeColor3=COLORS.Black; popupNo.TextStrokeTransparency=0; Instance.new("UICorner",popupNo).CornerRadius=UDim.new(0,8)
+    popupBuy=Instance.new("TextButton",popupFrame)
+    popupBuy.Size=UDim2.new(0,120,0,40); popupBuy.Position=UDim2.new(0.25,-60,1,-60); popupBuy.BackgroundColor3=COLORS.Green
+    popupBuy.Text="Buy PetBux"; popupBuy.Font=Enum.Font.GothamBold; popupBuy.TextSize=22; popupBuy.TextColor3=COLORS.White
+    popupBuy.TextStrokeColor3=COLORS.Black; popupBuy.TextStrokeTransparency=0; popupBuy.Visible=false
+    Instance.new("UICorner",popupBuy).CornerRadius=UDim.new(0,8)
     popupYes.MouseEnter:Connect(function() TweenService:Create(popupYes,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Green:lerp(COLORS.White,0.2)}):Play() end)
     popupYes.MouseLeave:Connect(function() TweenService:Create(popupYes,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Green}):Play() end)
     popupNo.MouseEnter:Connect(function() TweenService:Create(popupNo,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Red:lerp(COLORS.White,0.2)}):Play() end)
     popupNo.MouseLeave:Connect(function() TweenService:Create(popupNo,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Red}):Play() end)
-    popupYes.Activated:Connect(function() if shopState.PendingItem then PurchaseRequest:FireServer(shopState.PendingItem.id) end; hidePopup() end)
+    popupBuy.MouseEnter:Connect(function() TweenService:Create(popupBuy,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Green:lerp(COLORS.White,0.2)}):Play() end)
+    popupBuy.MouseLeave:Connect(function() TweenService:Create(popupBuy,TweenInfo.new(0.15),{BackgroundColor3=COLORS.Green}):Play() end)
+    popupYes.Activated:Connect(confirmPurchase)
     popupNo.Activated:Connect(hidePopup)
+    popupBuy.Activated:Connect(function()
+        UIController.Events.TogglePetBuxPurchase:Fire()
+    end)
     makeDraggable(window,dragBar)
     rebuildGrid()
 end
@@ -264,6 +281,8 @@ end
 switchTab=function(tabName)
     if shopState.ActiveTab==tabName then return end
     shopState.ActiveTab=tabName
+    UIController.State.ShopTab = tabName
+    UIController.State.MarketplaceState = (tabName == "Marketplace") and "view" or "idle"
     for _,btn in ipairs(tabBar:GetChildren()) do
         if btn:IsA("TextButton") then
             TweenService:Create(btn,TweenInfo.new(0.2),{BackgroundColor3=(btn.Text==tabName) and COLORS.Bar or COLORS.Grey}):Play()
@@ -277,25 +296,75 @@ end
 
 rebuildGrid=function()
     grid:ClearAllChildren()
+    if shopState.ActiveTab == "Marketplace" then
+        local msg = Instance.new("TextLabel",grid)
+        msg.Size = UDim2.new(1,0,1,0)
+        msg.BackgroundTransparency = 1
+        msg.Font = Enum.Font.GothamBold
+        msg.TextSize = 24
+        msg.TextColor3 = COLORS.White
+        msg.TextStrokeColor3 = COLORS.Black
+        msg.TextStrokeTransparency = 0
+        msg.Text = "Marketplace coming soon"
+        UIController.State.ShopItems = 0
+        return
+    end
     local layout=Instance.new("UIGridLayout",grid)
     layout.CellPadding=UDim2.new(0,10,0,10); layout.CellSize=UDim2.new(0,180,0,220)
     for _,item in ipairs(TAB_DATA[shopState.ActiveTab]) do
         createItemCard(item).Parent=grid
     end
+    UIController.State.ShopItems = #TAB_DATA[shopState.ActiveTab]
 end
 
 ---------------------------------------------------------------
 -- 6. Purchase Flow -------------------------------------------
 ---------------------------------------------------------------
+local function quickBuy(index)
+    local list = TAB_DATA[shopState.ActiveTab]
+    local item = list and list[index]
+    if item then showPopup(item) end
+end
+
+local function confirmPurchase()
+    if not shopState.PendingItem then return end
+    local item = shopState.PendingItem
+    UIController.SetPetBux(UIController.State.PetBux - item.price)
+    UIController.Events.AddToInventory:Fire(item.name)
+    PurchaseRequest:FireServer(item.id)
+    hidePopup()
+end
+
 showPopup=function(item)
-    shopState.PendingItem=item
-    popupText.Text=string.format("Are you sure you want to buy %s for %d PetBux?",item.name,item.price)
+    if UIController.State.PetBux < item.price then
+        shopState.PendingItem=nil
+        UIController.State.PendingItem = nil
+        popupYes.Visible=false
+        popupBuy.Visible=true
+        popupNo.Text="Close"
+        popupNo.Position=UDim2.new(0.75,-50,1,-60)
+        popupBuy.Position=UDim2.new(0.25,-60,1,-60)
+        popupText.Text=string.format("Not enough PetBux to buy %s",item.name)
+    else
+        shopState.PendingItem=item
+        UIController.State.PendingItem = item.name
+        popupYes.Visible=true
+        popupBuy.Visible=false
+        popupNo.Text="No"
+        popupNo.Position=UDim2.new(0.75,-50,1,-60)
+        popupText.Text=string.format("Are you sure you want to buy %s for %d PetBux?",item.name,item.price)
+    end
     popupFrame.Visible=true; popupFrame.Size=UDim2.new(0,0,0,0)
     TweenService:Create(popupFrame,TweenInfo.new(0.25,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0.4,0,0.25,0)}):Play()
 end
 
 hidePopup=function()
     shopState.PendingItem=nil
+    UIController.State.PendingItem=nil
+    popupYes.Visible=true
+    popupBuy.Visible=false
+    popupNo.Text="No"
+    popupNo.Position=UDim2.new(0.75,-50,1,-60)
     TweenService:Create(popupFrame,TweenInfo.new(0.15),{Size=UDim2.new(0,0,0,0)}):Play()
     task.delay(0.15,function() popupFrame.Visible=false end)
 end
@@ -304,14 +373,14 @@ end
 -- 7. Animation ------------------------------------------------
 ---------------------------------------------------------------
 openShop=function()
-    shopState.Visible=true; mainGui.Enabled=true; window.Visible=true
-    window.Size=UDim2.new(0,0,0,0); window.Position=UDim2.new(0.5,0,0.5,0)
-    TweenService:Create(window,TweenInfo.new(0.25,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0.55,0,0.6,0),Position=UDim2.new(0.225,0,0.2,0)}):Play()
+    shopState.Visible=true; UIController.State.ShopOpen = true; mainGui.Enabled=true; window.Visible=true
+    window.Size=UDim2.new(0,0,0,0); window.Position=UDim2.new(0.5,0,0.5,0); window.BackgroundTransparency=1
+    TweenService:Create(window,TweenInfo.new(0.25,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0.55,0,0.6,0),Position=UDim2.new(0.225,0,0.2,0),BackgroundTransparency=0.25}):Play()
 end
 
 closeShop=function()
-    shopState.Visible=false
-    TweenService:Create(window,TweenInfo.new(0.2),{Size=UDim2.new(0,0,0,0),Position=UDim2.new(0.5,0,0.5,0)}):Play()
+    shopState.Visible=false; UIController.State.ShopOpen = false
+    TweenService:Create(window,TweenInfo.new(0.2),{Size=UDim2.new(0,0,0,0),Position=UDim2.new(0.5,0,0.5,0),BackgroundTransparency=1}):Play()
     task.delay(0.2,function() window.Visible=false; mainGui.Enabled=false end)
 end
 
@@ -324,8 +393,24 @@ end
 ---------------------------------------------------------------
 UserInputService.InputBegan:Connect(function(input,gpe)
     if gpe then return end
-    if input.KeyCode==Enum.KeyCode.B then toggleShop()
-    elseif input.KeyCode==Enum.KeyCode.Escape and shopState.Visible then closeShop() end
+    if popupFrame.Visible then
+        if input.KeyCode==Enum.KeyCode.Y and popupYes.Visible then
+            confirmPurchase()
+        elseif input.KeyCode==Enum.KeyCode.N or input.KeyCode==Enum.KeyCode.Escape then
+            hidePopup()
+        end
+        return
+    end
+    local shopKey = UIController.State.Keybinds and UIController.State.Keybinds.Shop or Enum.KeyCode.B
+    if input.KeyCode==shopKey then
+        toggleShop()
+    elseif input.KeyCode==Enum.KeyCode.Escape and shopState.Visible then
+        closeShop()
+    elseif shopState.Visible then
+        if input.KeyCode.Value>=Enum.KeyCode.One.Value and input.KeyCode.Value<=Enum.KeyCode.Nine.Value then
+            quickBuy(input.KeyCode.Value - Enum.KeyCode.One.Value + 1)
+        end
+    end
 end)
 
 UIController.Events.ToggleShop.Event:Connect(toggleShop)
@@ -334,22 +419,16 @@ UIController.Events.ToggleShop.Event:Connect(toggleShop)
 -- 9. Debug & Failsafes ---------------------------------------
 ---------------------------------------------------------------
 local function updateBalance()
-    balanceLabel.Text=string.format("PetBux: %,d",shopState.Balance)
+    balanceLabel.Text=string.format("PetBux: %,d",UIController.State.PetBux)
 end
 
 local function updateDebug()
-    debugLabel.Text=string.format("Shop: %s | Tab: %s | PetBux: %d",tostring(shopState.Visible),shopState.ActiveTab,shopState.Balance)
+    debugLabel.Text=string.format("Shop: %s | Tab: %s | PetBux: %d",tostring(shopState.Visible),shopState.ActiveTab,UIController.State.PetBux)
 end
 
+UIController.Events.PetBuxChanged.Event:Connect(updateBalance)
 RunService.RenderStepped:Connect(function()
     updateDebug()
-end)
-
-task.spawn(function()
-    while true do
-        task.wait(0.5)
-        if balanceLabel then updateBalance() end
-    end
 end)
 
 ensureGui=function()
