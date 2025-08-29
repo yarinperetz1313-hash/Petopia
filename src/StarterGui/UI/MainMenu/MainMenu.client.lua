@@ -1,15 +1,6 @@
-diff --git a/src/StarterGui/UI/MainMenu/MainMenu.client.lua b/src/StarterGui/UI/MainMenu/MainMenu.client.lua
-index 120fe168d8758e753110896ab473934ff8c1a967..c0b7107e278ab7dc2bc84ea395d293b9f81fb284 100644
---- a/src/StarterGui/UI/MainMenu/MainMenu.client.lua
-+++ b/src/StarterGui/UI/MainMenu/MainMenu.client.lua
-@@ -1,10 +1,317 @@
--print("MainMenu script is running!")
 +--[[
 +    MainMenu.client.lua
 +    Professional main menu system for Petopia.
- 
--local player = game.Players.LocalPlayer
--local gui = script.Parent
 +    Sections
 +    --------
 +    1. Constants and configuration
@@ -323,8 +314,3 @@ index 120fe168d8758e753110896ab473934ff8c1a967..c0b7107e278ab7dc2bc84ea395d293b9
 +-- initialise
 +buildUI()
  
--local textLabel = Instance.new("TextLabel")
--textLabel.Size = UDim2.new(1, 0, 0.2, 0)
--textLabel.Text = "MainMenu is working!"
--textLabel.TextScaled = true
--textLabel.Parent = gui

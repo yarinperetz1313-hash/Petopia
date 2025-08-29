@@ -1,15 +1,3 @@
-diff --git a/src/StarterGui/UI/Inventory/Inventory.client.lua b/src/StarterGui/UI/Inventory/Inventory.client.lua
-index 269f361e2178152052b4ab0d1810726610dd8a61..3cb9fad8427d7bc96f13a6b697f8bbf364675e13 100644
---- a/src/StarterGui/UI/Inventory/Inventory.client.lua
-+++ b/src/StarterGui/UI/Inventory/Inventory.client.lua
-@@ -1,7 +1,334 @@
--print("✅ Inventory is working!")
--local gui = script.Parent
--local label = Instance.new("TextLabel")
--label.Size = UDim2.new(1,0,0.2,0)
--label.Text = "INVENTORY PLACEHOLDER"
--label.TextScaled = true
--label.Parent = gui
 +--[[
 +    Inventory.client.lua
 +    Draggable inventory window with 12 slots and animations.
