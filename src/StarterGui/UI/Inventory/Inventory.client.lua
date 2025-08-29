@@ -111,8 +111,10 @@ buildUI = function()
     mainGui.ResetOnSpawn = false
     mainGui.IgnoreGuiInset = true
     mainGui.Enabled = false
-    mainGui:ClearAllChildren()
-
+    for _, child in ipairs(mainGui:GetChildren()) do
+        if child ~= script then child:Destroy() end
+    end
+    
     window = Instance.new("Frame")
     window.Size = UDim2.new(0.55, 0, 0.6, 0)
     window.Position = UDim2.new(0.5, 0, 0.5, 0)
