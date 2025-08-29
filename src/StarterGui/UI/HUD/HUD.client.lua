@@ -144,5 +144,6 @@ end)
 -- initialise balance
 local petBux = EconomyClient.GetPetBux()
 if petBux == 0 then
-    EconomyClient.RequestRefresh()
+     petBux = EconomyClient.RequestRefresh()
 end
+balanceLabel.Text = string.format("🪙 PetBux: %,d", petBux)

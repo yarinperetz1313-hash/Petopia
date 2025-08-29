@@ -2,7 +2,8 @@ local Players = game:GetService("Players")
 local DataStoreService = game:GetService("DataStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local DataCatalog = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("DataCatalog"))
+local Modules = ReplicatedStorage:WaitForChild("Modules")
+local DataCatalog = require(Modules:WaitForChild("DataCatalog"))
 local Inventory = require(script.Parent.InventoryServer)
 
 local BalanceStore = DataStoreService:GetDataStore("PetBux")
@@ -20,6 +21,10 @@ local balances = {}
 
 local function sendBalance(player)
     BalancePush:FireClient(player, balances[player])
+end
+
+local function rejectPurchase(player, message)
+    PurchaseRequest:FireClient(player, false, message)
 end
 
 Players.PlayerAdded:Connect(function(player)
@@ -45,26 +50,26 @@ end
 PurchaseRequest.OnServerEvent:Connect(function(player, itemId, cost)
     local now = os.clock()
     if lastRequest[player] and now - lastRequest[player] < THROTTLE_WINDOW then
-        PurchaseRequest:FireClient(player, false, "Please wait before making another purchase")
+        rejectPurchase(player, "Please wait before making another purchase")
         return
     end
     lastRequest[player] = now
 
     local item = DataCatalog.GetItem(itemId)
     if not item then
-        PurchaseRequest:FireClient(player, false, "Invalid item")
+        rejectPurchase(player, "Invalid item")
         warn(("Player %s attempted to purchase invalid item '%s'"):format(player.Name, tostring(itemId)))
         return
     end
     if cost == nil or cost ~= item.price then
-        PurchaseRequest:FireClient(player, false, "Invalid price")
+        rejectPurchase(player, "Invalid price")
         warn(("Player %s sent mismatched cost for '%s': %s (expected %d)"):format(player.Name, tostring(itemId), tostring(cost), item.price))
         return
     end
 
     local current = balances[player] or 0
     if current < item.price then
-        PurchaseRequest:FireClient(player, false, "Insufficient funds")
+        rejectPurchase(player, "Insufficient funds")
         return
     end
 

@@ -23,8 +23,8 @@ function GuiUtil.MakeDraggable(frame, handle)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragStart = input.Position
             startPos = frame.Position
-            input.Changed:Connect(function(state)
-                if state == Enum.UserInputState.End then
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
                     dragStart = nil
                 end
             end)
@@ -34,7 +34,15 @@ function GuiUtil.MakeDraggable(frame, handle)
         if input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
             local delta = input.Position - dragStart
             frame.Position = startPos + UDim2.fromOffset(delta.X, delta.Y)
-@@ -58,26 +64,26 @@ function GuiUtil.SnapToPixels(gui)
+        end
+    end)
+end
+
+function GuiUtil.SnapToPixels(gui)
+    local pos = gui.Position
+    gui.Position = UDim2.new(pos.X.Scale, math.floor(pos.X.Offset + 0.5), pos.Y.Scale, math.floor(pos.Y.Offset + 0.5))
+    local size = gui.Size
+    gui.Size = UDim2.new(size.X.Scale, math.floor(size.X.Offset + 0.5), size.Y.Scale, math.floor(size.Y.Offset + 0.5))
 end
 
 function GuiUtil.BuildIconButton(props)

@@ -23,16 +23,34 @@ local SCHEMA = {
     Keybinds = "table",
 }
 
+local DEFAULT_STATE = {
+    PetBux = 0,
+    MusicVolume = 0,
+    SFXVolume = 0,
+    DebugEnabled = false,
+    GraphicsHigh = false,
+    Keybinds = {},
+}
+
 local function validateData(data)
     if typeof(data) ~= "table" then
         return false
     end
-    for key, value in pairs(data) do
-        local expected = SCHEMA[key]
-        if not expected or typeof(value) ~= expected then
+
+    -- ensure all keys exist and match expected types
+    for key, expectedType in pairs(SCHEMA) do
+        if typeof(data[key]) ~= expectedType then
             return false
         end
     end
+
+    -- ensure no unexpected keys are present
+    for key in pairs(data) do
+        if SCHEMA[key] == nil then
+            return false
+        end
+    end
+
     return true
 end
 
@@ -77,10 +95,11 @@ Players.PlayerAdded:Connect(function(player)
     end)
     if success and validateData(data) then
         playerStates[player] = data
-        autoSaveRemote:FireClient(player, data)
     else
-        playerStates[player] = {}
+        playerStates[player] = table.clone(DEFAULT_STATE)
     end
+
+    autoSaveRemote:FireClient(player, playerStates[player])
 
     task.spawn(function()
         while player.Parent do
