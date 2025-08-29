@@ -1,5 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UIController = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("UIController"))
+
+local ModulesFolder = ReplicatedStorage:WaitForChild("Modules", 5)
+local GuiUtil = require(ModulesFolder:WaitForChild("GuiUtil", 5))
+local UIController = require(GuiUtil.BoundWait(ModulesFolder, "UIController", 5))
+assert(UIController, "UIController module missing")
 local AutoSave = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("AutoSave")
 
 local function send()

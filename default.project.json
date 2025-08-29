@@ -18,6 +18,9 @@
         "AutoSave": {
           "$className": "RemoteEvent"
         },
+        "AutoSavePull": {
+          "$className": "RemoteFunction"
+        },
         "BalancePush": {
           "$className": "RemoteEvent"
         },
