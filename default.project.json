@@ -3,16 +3,15 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "Assets": {
-        "$path": "src/ReplicatedStorage/Assets"
-      },
       "Modules": {
         "$path": "src/ReplicatedStorage/Modules"
       },
-       "Remotes": {
-          "$path": "src/ReplicatedStorage/Remotes",
-          "PurchaseRequest": {"$className": "RemoteEvent"}
+      "Remotes": {
+        "$path": "src/ReplicatedStorage/Remotes",
+        "PurchaseRequest": {
+          "$className": "RemoteEvent"
         }
+      }
     },
     "ServerScriptService": {
       "Systems": {
@@ -24,31 +23,23 @@
         "$className": "Folder",
         "MainMenu": {
           "$className": "ScreenGui",
-          "MainMenuScript": {
-            "$path": "src/StarterGui/UI/MainMenu/MainMenu.client.lua",
-            "$className": "LocalScript"
-          }
+          "$path": "src/StarterGui/UI/MainMenu"
         },
         "Shop": {
           "$className": "ScreenGui",
-          "ShopScript": {
-            "$path": "src/StarterGui/UI/Shop/Shop.client.lua",
-            "$className": "LocalScript"
-          }
+          "$path": "src/StarterGui/UI/Shop"
         },
         "Inventory": {
           "$className": "ScreenGui",
-          "InventoryScript": {
-            "$path": "src/StarterGui/UI/Inventory/Inventory.client.lua",
-            "$className": "LocalScript"
-          }
+          "$path": "src/StarterGui/UI/Inventory"
         },
         "HUD": {
           "$className": "ScreenGui",
-          "HUDScript": {
-            "$path": "src/StarterGui/UI/HUD/HUD.client.lua",
-            "$className": "LocalScript"
-          }
+          "$path": "src/StarterGui/UI/HUD"
+        },
+        "Settings": {
+          "$className": "ScreenGui",
+          "$path": "src/StarterGui/UI/Settings"
         }
       }
     },

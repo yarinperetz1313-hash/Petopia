@@ -52,6 +52,9 @@ local invState = {
     Visible = false,
     Slots = {},
 }
+UIController.State.InventoryOpen = false
+UIController.State.InventoryCapacity = SLOT_COUNT
+UIController.State.InventorySlots = 0
 
 local mainGui
 local window
@@ -216,6 +219,7 @@ end
 
 createSlots = function()
     invState.Slots = {}
+    UIController.State.InventorySlots = 0
     for i = 1, SLOT_COUNT do
         local slot = Instance.new("TextButton")
         slot.Name = "Slot" .. i
@@ -248,12 +252,26 @@ createSlots = function()
     end
 end
 
+local function addItem(name)
+    for _, slot in ipairs(invState.Slots) do
+        if slot.Text == "[Empty]" then
+            slot.Text = name
+            slot.TextColor3 = COLORS.White
+            UIController.State.InventorySlots = UIController.State.InventorySlots + 1
+            updateDebug()
+            return true
+        end
+    end
+    return false
+end
+
 ---------------------------------------------------------------
 -- 6. Open/close animations ----------------------------------
 ---------------------------------------------------------------
 
 openInventory = function()
     invState.Visible = true
+    UIController.State.InventoryOpen = true
     mainGui.Enabled = true
     window.Visible = true
     window.Size = UDim2.new(0, 0, 0, 0)
@@ -266,6 +284,7 @@ end
 
 closeInventory = function()
     invState.Visible = false
+    UIController.State.InventoryOpen = false
     TweenService:Create(window, TweenInfo.new(0.2), {
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -294,17 +313,27 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
     if input.KeyCode == Enum.KeyCode.I then
         toggleInventory()
+    elseif input.KeyCode == Enum.KeyCode.Escape and invState.Visible then
+        closeInventory()
     end
 end)
 
 UIController.Events.ToggleInventory.Event:Connect(toggleInventory)
+UIController.Events.AddToInventory.Event:Connect(function(itemName)
+    addItem(itemName)
+end)
 
 ---------------------------------------------------------------
 -- 8. Debug overlay & fail-safes ------------------------------
 ---------------------------------------------------------------
 
 local function updateDebug()
-    debugLabel.Text = string.format("Inventory: %s | Slots: %d", tostring(invState.Visible), #invState.Slots)
+    debugLabel.Text = string.format(
+        "Inventory: %s | Slots: %d/%d",
+        tostring(invState.Visible),
+        UIController.State.InventorySlots,
+        SLOT_COUNT
+    )
 end
 
 task.spawn(function()
