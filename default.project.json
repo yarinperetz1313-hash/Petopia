@@ -9,9 +9,10 @@
       "Modules": {
         "$path": "src/ReplicatedStorage/Modules"
       },
-      "Remotes": {
-        "$path": "src/ReplicatedStorage/Remotes"
-      }
+       "Remotes": {
+          "$path": "src/ReplicatedStorage/Remotes",
+          "PurchaseRequest": {"$className": "RemoteEvent"}
+        }
     },
     "ServerScriptService": {
       "Systems": {
@@ -19,26 +20,38 @@
       }
     },
     "StarterGui": {
-  "UI": {
-    "$className": "Folder",
-    "MainMenu": {
-      "$className": "ScreenGui",
-      "$path": "src/StarterGui/UI/MainMenu"
+      "UI": {
+        "$className": "Folder",
+        "MainMenu": {
+          "$className": "ScreenGui",
+          "MainMenuScript": {
+            "$path": "src/StarterGui/UI/MainMenu/MainMenu.client.lua",
+            "$className": "LocalScript"
+          }
+        },
+        "Shop": {
+          "$className": "ScreenGui",
+          "ShopScript": {
+            "$path": "src/StarterGui/UI/Shop/Shop.client.lua",
+            "$className": "LocalScript"
+          }
+        },
+        "Inventory": {
+          "$className": "ScreenGui",
+          "InventoryScript": {
+            "$path": "src/StarterGui/UI/Inventory/Inventory.client.lua",
+            "$className": "LocalScript"
+          }
+        },
+        "HUD": {
+          "$className": "ScreenGui",
+          "HUDScript": {
+            "$path": "src/StarterGui/UI/HUD/HUD.client.lua",
+            "$className": "LocalScript"
+          }
+        }
+      }
     },
-    "Shop": {
-      "$className": "ScreenGui",
-      "$path": "src/StarterGui/UI/Shop"
-    },
-    "Inventory": {
-      "$className": "ScreenGui",
-      "$path": "src/StarterGui/UI/Inventory"
-    },
-    "HUD": {
-      "$className": "ScreenGui",
-      "$path": "src/StarterGui/UI/HUD"
-    }
-  }
-},
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": {
