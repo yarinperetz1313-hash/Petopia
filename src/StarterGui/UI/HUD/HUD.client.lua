@@ -142,4 +142,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- initialise balance
-EconomyClient.GetBalance()
+local petBux = EconomyClient.GetPetBux()
+if petBux == 0 then
+    EconomyClient.RequestRefresh()
+end
