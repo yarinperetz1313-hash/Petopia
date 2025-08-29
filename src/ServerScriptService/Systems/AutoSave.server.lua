@@ -6,32 +6,32 @@ local autoSaveRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("A
 local store = DataStoreService:GetDataStore("PlayerState")
 
 local SAVE_INTERVAL = 60
-local THROTTLE_INTERVAL = 30
+local SAVE_COOLDOWN = 30 -- minimum time between actual DataStore writes
+local REQUEST_COOLDOWN = 30 -- minimum time between client save requests
 
 local lastSaveRequest = {}
+local lastSaved = {}
 local playerStates = {}
+
+-- expected structure for player state
+local SCHEMA = {
+    PetBux = "number",
+    MusicVolume = "number",
+    SFXVolume = "number",
+    DebugEnabled = "boolean",
+    GraphicsHigh = "boolean",
+    Keybinds = "table",
+}
 
 local function validateData(data)
     if typeof(data) ~= "table" then
         return false
     end
-    if data.PetBux ~= nil and typeof(data.PetBux) ~= "number" then
-        return false
-    end
-    if data.MusicVolume ~= nil and typeof(data.MusicVolume) ~= "number" then
-        return false
-    end
-    if data.SFXVolume ~= nil and typeof(data.SFXVolume) ~= "number" then
-        return false
-    end
-    if data.DebugEnabled ~= nil and typeof(data.DebugEnabled) ~= "boolean" then
-        return false
-    end
-    if data.GraphicsHigh ~= nil and typeof(data.GraphicsHigh) ~= "boolean" then
-        return false
-    end
-    if data.Keybinds ~= nil and typeof(data.Keybinds) ~= "table" then
-        return false
+    for key, value in pairs(data) do
+        local expected = SCHEMA[key]
+        if not expected or typeof(value) ~= expected then
+            return false
+        end
     end
     return true
 end
@@ -39,7 +39,7 @@ end
 autoSaveRemote.OnServerEvent:Connect(function(player, data)
     local now = os.clock()
     local last = lastSaveRequest[player]
-    if last and now - last < THROTTLE_INTERVAL then
+    if last and now - last < REQUEST_COOLDOWN then
         return
     end
     if not validateData(data) then
@@ -52,19 +52,30 @@ end)
 
 local function savePlayer(player)
     local data = playerStates[player]
-    if not data then
+    if not data or not validateData(data) then
+        if data then
+            warn(("Refusing to save invalid data for %s"):format(player.Name))
+        end
         return
     end
+
+    local now = os.clock()
+    local last = lastSaved[player]
+    if last and now - last < SAVE_COOLDOWN then
+        return
+    end
+
     pcall(function()
         store:SetAsync(player.UserId, data)
     end)
+    lastSaved[player] = now
 end
 
 Players.PlayerAdded:Connect(function(player)
     local success, data = pcall(function()
         return store:GetAsync(player.UserId)
     end)
-    if success and data then
+    if success and validateData(data) then
         playerStates[player] = data
         autoSaveRemote:FireClient(player, data)
     else
@@ -83,4 +94,5 @@ Players.PlayerRemoving:Connect(function(player)
     savePlayer(player)
     playerStates[player] = nil
     lastSaveRequest[player] = nil
+    lastSaved[player] = nil
 end)
