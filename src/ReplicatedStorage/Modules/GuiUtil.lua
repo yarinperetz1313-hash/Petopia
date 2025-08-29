@@ -3,6 +3,12 @@ local UserInputService = game:GetService("UserInputService")
 
 local GuiUtil = {}
 
+--- Wait for the specified child up to `timeout` seconds.
+-- Raises an assertion if the child does not appear in time.
+-- @param parent Instance Parent to search under
+-- @param name string Name of the expected child
+-- @param timeout number? Maximum wait time in seconds (default 5)
+-- @return Instance The found child
 function GuiUtil.BoundWait(parent, name, timeout)
     timeout = timeout or 5
     local obj = parent:WaitForChild(name, timeout)
@@ -28,33 +34,7 @@ function GuiUtil.MakeDraggable(frame, handle)
         if input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
             local delta = input.Position - dragStart
             frame.Position = startPos + UDim2.fromOffset(delta.X, delta.Y)
-            GuiUtil.ConstrainToViewport(frame)
-        end
-    end)
-end
-
-function GuiUtil.ConstrainToViewport(frame)
-    local vp = workspace.CurrentCamera.ViewportSize
-    local pos = frame.AbsolutePosition
-    local size = frame.AbsoluteSize
-    local newX = math.clamp(pos.X, 0, vp.X - size.X)
-    local newY = math.clamp(pos.Y, 0, vp.Y - size.Y)
-    frame.Position = UDim2.fromOffset(newX, newY)
-end
-
-function GuiUtil.SnapToPixels(gui)
-    gui:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
-        gui.Position = UDim2.fromOffset(
-            math.floor(gui.AbsolutePosition.X + 0.5),
-            math.floor(gui.AbsolutePosition.Y + 0.5)
-        )
-    end)
-    gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-        gui.Size = UDim2.fromOffset(
-            math.floor(gui.AbsoluteSize.X + 0.5),
-            math.floor(gui.AbsoluteSize.Y + 0.5)
-        )
-    end)
+@@ -58,26 +64,26 @@ function GuiUtil.SnapToPixels(gui)
 end
 
 function GuiUtil.BuildIconButton(props)
