@@ -142,8 +142,5 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- initialise balance
-local petBux = EconomyClient.GetPetBux()
-if petBux == 0 then
-     petBux = EconomyClient.RequestRefresh()
-end
+local petBux = EconomyClient.RequestRefresh()
 balanceLabel.Text = string.format("🪙 PetBux: %,d", petBux)
