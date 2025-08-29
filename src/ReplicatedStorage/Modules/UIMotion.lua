@@ -1,4 +1,5 @@
 local TweenService = game:GetService("TweenService")
+
 local UIMotion = {}
 
 local APPEAR_INFO = TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -9,18 +10,19 @@ function UIMotion.AppearCentered(gui)
     gui.AnchorPoint = Vector2.new(0.5, 0.5)
     gui.Position = UDim2.fromScale(0.5, 0.5)
     gui.Visible = true
-    gui.Size = gui.Size -- ensure property replication
+    local targetSize = gui.Size
+    gui.Size = UDim2.new(targetSize.X.Scale, targetSize.X.Offset, 0, 0)
     gui.BackgroundTransparency = 1
-    gui.Size = UDim2.new(gui.Size.X, UDim.new(0, 0))
     TweenService:Create(gui, APPEAR_INFO, {
-        Size = UDim2.new(gui.Size.X, UDim.new(gui.Size.Y.Scale, gui.Size.Y.Offset)),
+        Size = targetSize,
         BackgroundTransparency = 0
     }):Play()
 end
 
 function UIMotion.Disappear(gui)
+    local targetSize = gui.Size
     TweenService:Create(gui, DISAPPEAR_INFO, {
-        Size = UDim2.new(gui.Size.X, UDim.new(0, 0)),
+        Size = UDim2.new(targetSize.X.Scale, targetSize.X.Offset, 0, 0),
         BackgroundTransparency = 1
     }):Play()
     task.delay(DISAPPEAR_INFO.Time, function()
@@ -30,10 +32,14 @@ end
 
 function UIMotion.Hover(button)
     button.MouseEnter:Connect(function()
-        TweenService:Create(button, FADE_INFO, {BackgroundColor3 = button.BackgroundColor3:Lerp(Color3.new(1,1,1), 0.1)}):Play()
+        TweenService:Create(button, FADE_INFO, {
+            BackgroundColor3 = button.BackgroundColor3:Lerp(Color3.new(1,1,1), 0.1)
+        }):Play()
     end)
     button.MouseLeave:Connect(function()
-        TweenService:Create(button, FADE_INFO, {BackgroundColor3 = button.BackgroundColor3}):Play()
+        TweenService:Create(button, FADE_INFO, {
+            BackgroundColor3 = button.BackgroundColor3
+        }):Play()
     end)
 end
 
@@ -48,13 +54,13 @@ end
 
 function UIMotion.FadeSwap(oldContainer, buildNew)
     if oldContainer then
-        TweenService:Create(oldContainer, FADE_INFO, {Transparency = 1}):Play()
+        TweenService:Create(oldContainer, FADE_INFO, {BackgroundTransparency = 1}):Play()
         task.wait(FADE_INFO.Time)
         oldContainer:Destroy()
     end
     local newContainer = buildNew()
-    newContainer.Transparency = 1
-    TweenService:Create(newContainer, FADE_INFO, {Transparency = 0}):Play()
+    newContainer.BackgroundTransparency = 1
+    TweenService:Create(newContainer, FADE_INFO, {BackgroundTransparency = 0}):Play()
     return newContainer
 end
 

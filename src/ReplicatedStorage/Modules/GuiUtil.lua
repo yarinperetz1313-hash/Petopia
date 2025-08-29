@@ -1,6 +1,17 @@
++18
+-3
+
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
+
 local GuiUtil = {}
+
+function GuiUtil.BoundWait(parent, name, timeout)
+    timeout = timeout or 5
+    local obj = parent:WaitForChild(name, timeout)
+    assert(obj, string.format("Missing child '%s' in %s", name, parent:GetFullName()))
+    return obj
+end
 
 function GuiUtil.MakeDraggable(frame, handle)
     handle = handle or frame
@@ -36,14 +47,21 @@ end
 
 function GuiUtil.SnapToPixels(gui)
     gui:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
-        gui.Position = UDim2.fromOffset(math.floor(gui.AbsolutePosition.X + 0.5), math.floor(gui.AbsolutePosition.Y + 0.5))
+        gui.Position = UDim2.fromOffset(
+            math.floor(gui.AbsolutePosition.X + 0.5),
+            math.floor(gui.AbsolutePosition.Y + 0.5)
+        )
     end)
     gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-        gui.Size = UDim2.fromOffset(math.floor(gui.AbsoluteSize.X + 0.5), math.floor(gui.AbsoluteSize.Y + 0.5))
+        gui.Size = UDim2.fromOffset(
+            math.floor(gui.AbsoluteSize.X + 0.5),
+            math.floor(gui.AbsoluteSize.Y + 0.5)
+        )
     end)
 end
 
 function GuiUtil.BuildIconButton(props)
+    props = props or {}
     local button = Instance.new("TextButton")
     button.AutoButtonColor = false
     button.BackgroundColor3 = props.BackgroundColor3 or Color3.fromRGB(45,120,220)

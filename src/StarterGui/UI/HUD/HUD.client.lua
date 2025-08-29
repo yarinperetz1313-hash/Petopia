@@ -141,5 +141,5 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- starting demo balance
-UIController.SetPetBux(1245)
+-- initialise balance
+EconomyClient.GetBalance()

@@ -25,9 +25,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 
-local ModulesFolder = ReplicatedStorage:WaitForChild("Modules")
-local UIController = require(ModulesFolder:WaitForChild("UIController"))
-local InventoryClient = require(ModulesFolder:WaitForChild("InventoryClient"))
+local ModulesFolder = ReplicatedStorage:WaitForChild("Modules", 5)
+local GuiUtil = require(ModulesFolder:WaitForChild("GuiUtil", 5))
+local UIController = require(GuiUtil.BoundWait(ModulesFolder, "UIController"))
+local InventoryClient = require(GuiUtil.BoundWait(ModulesFolder, "InventoryClient"))
 assert(UIController, "UIController module missing")
 
 local GUI_NAME = "PetopiaInventory"
@@ -74,32 +75,6 @@ local createSlots
 ---------------------------------------------------------------
 -- 3. Utility helpers ----------------------------------------
 ---------------------------------------------------------------
-
-local dragConnection
-local function makeDraggable(frame, dragHandle)
-    dragHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local startPos = frame.Position
-            local dragStart = input.Position
-            if dragConnection then
-                dragConnection:Disconnect()
-            end
-            dragConnection = UserInputService.InputChanged:Connect(function(moveInput)
-                if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
-                    local delta = moveInput.Position - dragStart
-                    frame.Position = startPos + UDim2.fromOffset(delta.X, delta.Y)
-                end
-            end)
-        end
-    end)
-
-    dragHandle.InputEnded:Connect(function(input)
-        if dragConnection and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            dragConnection:Disconnect()
-            dragConnection = nil
-        end
-    end)
-end
 
 ---------------------------------------------------------------
 -- 4. UI construction ----------------------------------------
@@ -214,7 +189,7 @@ buildUI = function()
     debugLabel.TextStrokeColor3 = COLORS.Black
     debugLabel.Parent = mainGui
 
-    makeDraggable(window, dragBar)
+    GuiUtil.MakeDraggable(window, dragBar)
     createSlots()
 end
 

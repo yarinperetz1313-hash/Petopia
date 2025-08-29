@@ -1,7 +1,3 @@
-
-+44
--0
-
 local Style = {}
 
 -- Theme colors

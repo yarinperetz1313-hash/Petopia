@@ -70,11 +70,12 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local ModulesFolder = ReplicatedStorage:WaitForChild("Modules")
-local UIController = require(ModulesFolder:WaitForChild("UIController"))
+local ModulesFolder = ReplicatedStorage:WaitForChild("Modules", 5)
+local GuiUtil = require(ModulesFolder:WaitForChild("GuiUtil", 5))
+local UIController = require(GuiUtil.BoundWait(ModulesFolder, "UIController"))
 assert(UIController, "UIController module missing")
 
-local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
 local PurchaseRequest = Remotes:FindFirstChild("PurchaseRequest")
 if not PurchaseRequest then
     warn("PurchaseRequest RemoteEvent missing; creating placeholder")
@@ -129,27 +130,7 @@ local buildUI,switchTab,rebuildGrid,openShop,closeShop,toggleShop,showPopup,hide
 ---------------------------------------------------------------
 -- 3. Helpers --------------------------------------------------
 ---------------------------------------------------------------
-local dragConnection
-local function makeDraggable(frame,handle)
-    handle.InputBegan:Connect(function(input)
-        if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
-            local startPos=frame.Position
-            local dragStart=input.Position
-            if dragConnection then dragConnection:Disconnect() end
-            dragConnection=UserInputService.InputChanged:Connect(function(move)
-                if move.UserInputType==Enum.UserInputType.MouseMovement or move.UserInputType==Enum.UserInputType.Touch then
-                    local delta=move.Position-dragStart
-                    frame.Position=startPos+UDim2.fromOffset(delta.X,delta.Y)
-                end
-            end)
-        end
-    end)
-    handle.InputEnded:Connect(function(input)
-        if dragConnection and (input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch) then
-            dragConnection:Disconnect(); dragConnection=nil
-        end
-    end)
-end
+
 
 local function createTabButton(name)
     local b=Instance.new("TextButton")
@@ -323,7 +304,7 @@ buildUI=function()
         UIController.State.LastEvent = "TradeConfirm"
         tradeFrame.Visible=false
     end)
-    makeDraggable(window,dragBar)
+    GuiUtil.MakeDraggable(window, dragBar)
     rebuildGrid()
 end
 

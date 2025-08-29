@@ -21,8 +21,9 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local ModulesFolder = ReplicatedStorage:WaitForChild("Modules")
-local UIController = require(ModulesFolder:WaitForChild("UIController"))
+local ModulesFolder = ReplicatedStorage:WaitForChild("Modules", 5)
+local GuiUtil = require(ModulesFolder:WaitForChild("GuiUtil", 5))
+local UIController = require(GuiUtil.BoundWait(ModulesFolder, "UIController"))
 assert(UIController, "UIController module missing")
 
 local GUI_NAME = "PetopiaSettings"
@@ -197,24 +198,6 @@ local function createSlider(parent, labelText, initial, callback)
     return frame, label
 end
 
-local function makeDraggable(frame, handle)
-    handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local startPos = frame.Position
-            local startInput = input.Position
-            local conn
-            conn = UserInputService.InputChanged:Connect(function(move)
-                if move.UserInputType == Enum.UserInputType.MouseMovement or move.UserInputType == Enum.UserInputType.Touch then
-                    local delta = move.Position - startInput
-                    frame.Position = startPos + UDim2.fromOffset(delta.X, delta.Y)
-                end
-            end)
-            input.Changed:Connect(function(state)
-                if state == Enum.UserInputState.End and conn then conn:Disconnect() end
-            end)
-        end
-    end)
-end
 
 local function createTabButton(name)
     local btn = Instance.new("TextButton")
@@ -376,7 +359,7 @@ buildUI = function()
     debugLabel.TextStrokeColor3 = COLORS.Black
     debugLabel.Parent = mainGui
 
-    makeDraggable(window,dragBar)
+    GuiUtil.MakeDraggable(window, dragBar)
 
     closeButton.Activated:Connect(function()
         closeSettings()
