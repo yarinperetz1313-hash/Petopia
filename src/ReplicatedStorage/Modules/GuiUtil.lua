@@ -1,6 +1,3 @@
-+18
--3
-
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 
