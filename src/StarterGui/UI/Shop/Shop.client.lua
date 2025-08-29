@@ -98,17 +98,17 @@ local COLORS = {
 local TAB_ORDER = {"Pets","Items","Upgrades","Marketplace"}
 local TAB_DATA = {
     Pets = {
-        {id="puppy",name="Puppy",price=100},
-        {id="kitten",name="Kitten",price=150},
-        {id="hamster",name="Hamster",price=75},
+        {id="puppy",name="Puppy",price=100,type="Pet",rarity="Common"},
+        {id="kitten",name="Kitten",price=150,type="Pet",rarity="Common"},
+        {id="hamster",name="Hamster",price=75,type="Pet",rarity="Common"},
     },
     Items = {
-        {id="potion",name="Healing Potion",price=50},
-        {id="treat",name="Pet Treat",price=25},
+        {id="potion",name="Healing Potion",price=50,type="Item"},
+        {id="treat",name="Pet Treat",price=25,type="Item"},
     },
     Upgrades = {
-        {id="slot",name="Extra Slot",price=500},
-        {id="speed",name="Pet Speed",price=300},
+        {id="slot",name="Extra Slot",price=500,type="Upgrade"},
+        {id="speed",name="Pet Speed",price=300,type="Upgrade"},
     },
     Marketplace = {},
 }
@@ -269,7 +269,59 @@ buildUI=function()
     popupYes.Activated:Connect(confirmPurchase)
     popupNo.Activated:Connect(hidePopup)
     popupBuy.Activated:Connect(function()
-        UIController.Events.TogglePetBuxPurchase:Fire()
+        UIController.Fire("TogglePetBux")
+    end)
+
+    petbuxFrame=Instance.new("Frame",mainGui)
+    petbuxFrame.Size=UDim2.new(0.3,0,0.2,0)
+    petbuxFrame.Position=UDim2.new(0.35,0,0.4,0)
+    petbuxFrame.BackgroundColor3=COLORS.Background
+    petbuxFrame.BackgroundTransparency=0.25
+    petbuxFrame.Visible=false
+    Instance.new("UICorner",petbuxFrame).CornerRadius=UDim.new(0,12)
+    local pbShadow=shadow:Clone(); pbShadow.Size=UDim2.new(1,20,1,20); pbShadow.Position=UDim2.new(0,-10,0,-10); pbShadow.Parent=petbuxFrame
+    local pbLabel=Instance.new("TextLabel",petbuxFrame)
+    pbLabel.Size=UDim2.new(1,-20,1,-20); pbLabel.Position=UDim2.new(0,10,0,10)
+    pbLabel.BackgroundTransparency=1
+    pbLabel.Font=Enum.Font.GothamBold
+    pbLabel.TextSize=24
+    pbLabel.TextColor3=COLORS.White
+    pbLabel.TextStrokeTransparency=0
+    pbLabel.TextStrokeColor3=COLORS.Black
+    pbLabel.Text="PetBux purchase coming soon"
+
+    tradeFrame=Instance.new("Frame",mainGui)
+    tradeFrame.Size=UDim2.new(0.5,0,0.4,0)
+    tradeFrame.Position=UDim2.new(0.25,0,0.3,0)
+    tradeFrame.BackgroundColor3=COLORS.Background
+    tradeFrame.BackgroundTransparency=0.25
+    tradeFrame.Visible=false
+    Instance.new("UICorner",tradeFrame).CornerRadius=UDim.new(0,12)
+    local tfShadow=shadow:Clone(); tfShadow.Size=UDim2.new(1,20,1,20); tfShadow.Position=UDim2.new(0,-10,0,-10); tfShadow.Parent=tradeFrame
+    local feeLabel=Instance.new("TextLabel",tradeFrame)
+    feeLabel.Size=UDim2.new(1,-20,0,40); feeLabel.Position=UDim2.new(0,10,0,10)
+    feeLabel.BackgroundTransparency=1
+    feeLabel.Font=Enum.Font.GothamBold
+    feeLabel.TextSize=20
+    feeLabel.TextColor3=COLORS.White
+    feeLabel.TextStrokeTransparency=0
+    feeLabel.TextStrokeColor3=COLORS.Black
+    feeLabel.Text="Trade Fee: 10%"
+    local confirmTrade=Instance.new("TextButton",tradeFrame)
+    confirmTrade.Size=UDim2.new(0,120,0,40); confirmTrade.Position=UDim2.new(0.5,-60,1,-60)
+    confirmTrade.BackgroundColor3=COLORS.Green
+    confirmTrade.Text="Confirm"
+    confirmTrade.Font=Enum.Font.GothamBold
+    confirmTrade.TextSize=22
+    confirmTrade.TextColor3=COLORS.White
+    confirmTrade.TextStrokeTransparency=0
+    confirmTrade.TextStrokeColor3=COLORS.Black
+    Instance.new("UICorner",confirmTrade).CornerRadius=UDim.new(0,8)
+    confirmTrade.Activated:Connect(function()
+        UIController.SetPetBux(math.floor(UIController.State.PetBux*0.9))
+        UIController.State.MarketplaceState = "trade"
+        UIController.State.LastEvent = "TradeConfirm"
+        tradeFrame.Visible=false
     end)
     makeDraggable(window,dragBar)
     rebuildGrid()
@@ -297,15 +349,21 @@ end
 rebuildGrid=function()
     grid:ClearAllChildren()
     if shopState.ActiveTab == "Marketplace" then
-        local msg = Instance.new("TextLabel",grid)
-        msg.Size = UDim2.new(1,0,1,0)
-        msg.BackgroundTransparency = 1
-        msg.Font = Enum.Font.GothamBold
-        msg.TextSize = 24
-        msg.TextColor3 = COLORS.White
-        msg.TextStrokeColor3 = COLORS.Black
-        msg.TextStrokeTransparency = 0
-        msg.Text = "Marketplace coming soon"
+        local start = Instance.new("TextButton",grid)
+        start.Size = UDim2.new(0.5,0,0,50)
+        start.Position = UDim2.new(0.25,0,0.5,-25)
+        start.BackgroundColor3 = COLORS.Bar
+        start.Text = "Start Trade"
+        start.Font = Enum.Font.GothamBold
+        start.TextSize = 24
+        start.TextColor3 = COLORS.White
+        start.TextStrokeTransparency = 0
+        start.TextStrokeColor3 = COLORS.Black
+        Instance.new("UICorner",start).CornerRadius=UDim.new(0,8)
+        start.Activated:Connect(function()
+            tradeFrame.Visible = true
+            UIController.State.MarketplaceState = "trade"
+        end)
         UIController.State.ShopItems = 0
         return
     end
@@ -330,14 +388,22 @@ local function confirmPurchase()
     if not shopState.PendingItem then return end
     local item = shopState.PendingItem
     UIController.SetPetBux(UIController.State.PetBux - item.price)
-    UIController.Events.AddToInventory:Fire(item.name)
+    if item.type == "Pet" then
+        item.level = 1
+        item.xp = 0
+        local traits = {"Playful","Lazy","Energetic"}
+        item.trait = traits[math.random(#traits)]
+    end
+    UIController.Fire("AddToInventory", item)
     PurchaseRequest:FireServer(item.id)
+    UIController.State.LastEvent = "Purchase" .. item.id
     hidePopup()
 end
 
 showPopup=function(item)
     if UIController.State.PetBux < item.price then
         shopState.PendingItem=nil
+        UIController.State.LastEvent = "InsufficientFunds"
         UIController.State.PendingItem = nil
         popupYes.Visible=false
         popupBuy.Visible=true
@@ -373,13 +439,13 @@ end
 -- 7. Animation ------------------------------------------------
 ---------------------------------------------------------------
 openShop=function()
-    shopState.Visible=true; UIController.State.ShopOpen = true; mainGui.Enabled=true; window.Visible=true
+    shopState.Visible=true; UIController.State.ShopOpen = true; UIController.State.LastEvent="ShopOpen"; mainGui.Enabled=true; window.Visible=true
     window.Size=UDim2.new(0,0,0,0); window.Position=UDim2.new(0.5,0,0.5,0); window.BackgroundTransparency=1
     TweenService:Create(window,TweenInfo.new(0.25,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0.55,0,0.6,0),Position=UDim2.new(0.225,0,0.2,0),BackgroundTransparency=0.25}):Play()
 end
 
 closeShop=function()
-    shopState.Visible=false; UIController.State.ShopOpen = false
+    shopState.Visible=false; UIController.State.ShopOpen = false; UIController.State.LastEvent="ShopClose"
     TweenService:Create(window,TweenInfo.new(0.2),{Size=UDim2.new(0,0,0,0),Position=UDim2.new(0.5,0,0.5,0),BackgroundTransparency=1}):Play()
     task.delay(0.2,function() window.Visible=false; mainGui.Enabled=false end)
 end
@@ -414,6 +480,14 @@ UserInputService.InputBegan:Connect(function(input,gpe)
 end)
 
 UIController.Events.ToggleShop.Event:Connect(toggleShop)
+UIController.Events.TogglePetBux.Event:Connect(function()
+    petbuxFrame.Visible = not petbuxFrame.Visible
+    if petbuxFrame.Visible then
+        UIController.State.MarketplaceState = "buybux"
+    else
+        UIController.State.MarketplaceState = shopState.ActiveTab == "Marketplace" and "view" or "idle"
+    end
+end)
 
 ---------------------------------------------------------------
 -- 9. Debug & Failsafes ---------------------------------------
@@ -426,7 +500,7 @@ local function updateDebug()
     debugLabel.Text=string.format("Shop: %s | Tab: %s | PetBux: %d",tostring(shopState.Visible),shopState.ActiveTab,UIController.State.PetBux)
 end
 
-UIController.Events.PetBuxChanged.Event:Connect(updateBalance)
+UIController.Events.BalanceChanged.Event:Connect(updateBalance)
 RunService.RenderStepped:Connect(function()
     updateDebug()
 end)

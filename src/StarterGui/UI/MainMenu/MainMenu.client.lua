@@ -192,19 +192,19 @@ buildUI = function()
     playButton.Parent = buttonContainer
 
     local invButton = createButton("Inventory", "🎒 INVENTORY", function()
-        UIController.Events.ToggleInventory:Fire()
+        UIController.Fire("ToggleInventory")
         hideMenu()
     end)
     invButton.Parent = buttonContainer
 
     local shopButton = createButton("Shop", "💎 SHOP", function()
-        UIController.Events.ToggleShop:Fire()
+        UIController.Fire("ToggleShop")
         hideMenu()
     end)
     shopButton.Parent = buttonContainer
 
     local settingsButton = createButton("Settings", "⚙ SETTINGS", function()
-        UIController.Events.ToggleSettings:Fire()
+        UIController.Fire("ToggleSettings")
         hideMenu()
     end)
     settingsButton.Parent = buttonContainer

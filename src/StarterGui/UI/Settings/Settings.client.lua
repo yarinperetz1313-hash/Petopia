@@ -84,7 +84,7 @@ local function createToggle(parent, labelText, initial, callback)
         initial = not initial
         btn.Text = initial and "ON" or "OFF"
         callback(initial)
-        UIController.Events.SettingsChanged:Fire(UIController.State)
+        UIController.Fire("SettingsChanged", UIController.State)
     end)
 
     return frame, btn
@@ -185,12 +185,12 @@ local function createSlider(parent, labelText, initial, callback)
     minus.Activated:Connect(function()
         value = math.clamp(value - 0.1, 0, 1)
         updateLabel()
-        UIController.Events.SettingsChanged:Fire(UIController.State)
+        UIController.Fire("SettingsChanged", UIController.State)
     end)
     plus.Activated:Connect(function()
         value = math.clamp(value + 0.1, 0, 1)
         updateLabel()
-        UIController.Events.SettingsChanged:Fire(UIController.State)
+        UIController.Fire("SettingsChanged", UIController.State)
     end)
 
     updateLabel()
@@ -340,7 +340,7 @@ buildUI = function()
     display.Visible = false
     local _, dbgBtn = createToggle(display, "Debug Overlay", UIController.State.DebugEnabled, function(enabled)
         UIController.State.DebugEnabled = enabled
-        UIController.Events.DebugOverlayToggled:Fire(enabled)
+        UIController.Fire("DebugOverlayToggled", enabled)
     end)
     controlsRefs.DebugToggle = dbgBtn
     local _, gfxBtn = createToggle(display, "Graphics High", UIController.State.GraphicsHigh, function(enabled)
@@ -437,6 +437,7 @@ end
 openSettings = function()
     settingsState.Visible = true
     UIController.State.SettingsOpen = true
+    UIController.State.LastEvent = "SettingsOpen"
     mainGui.Enabled = true
     window.Visible = true
     window.Size = UDim2.new(0,0,0,0)
@@ -452,6 +453,7 @@ end
 closeSettings = function()
     settingsState.Visible = false
     UIController.State.SettingsOpen = false
+    UIController.State.LastEvent = "SettingsClose"
     TweenService:Create(window,TweenInfo.new(0.2),{
         Size = UDim2.new(0,0,0,0),
         Position = UDim2.new(0.5,0,0.5,0),
@@ -480,7 +482,7 @@ UserInputService.InputBegan:Connect(function(input,gpe)
             waitingForKey.button.Text = input.KeyCode.Name
             UIController.State.Keybinds[waitingForKey.action] = input.KeyCode
             waitingForKey = nil
-            UIController.Events.SettingsChanged:Fire(UIController.State)
+            UIController.Fire("SettingsChanged", UIController.State)
         end
         return
     end

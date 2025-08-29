@@ -27,6 +27,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local ModulesFolder = ReplicatedStorage:WaitForChild("Modules")
 local UIController = require(ModulesFolder:WaitForChild("UIController"))
+local InventoryClient = require(ModulesFolder:WaitForChild("InventoryClient"))
 assert(UIController, "UIController module missing")
 
 local GUI_NAME = "PetopiaInventory"
@@ -248,7 +249,12 @@ createSlots = function()
         end)
 
         slot.Activated:Connect(function()
-            print("Clicked slot", i)
+            if slot.ItemData and slot.ItemData.type == "Pet" then
+                slot.ItemData.name = "Evolved " .. slot.ItemData.name
+                slot.Text = string.format("%s L%d [%s]", slot.ItemData.name, slot.ItemData.level or 1, slot.ItemData.trait or "Trait")
+            else
+                print("Clicked slot", i)
+            end
         end)
 
         slot.Parent = grid
@@ -256,11 +262,16 @@ createSlots = function()
     end
 end
 
-local function addItem(name)
+local function addItem(item)
+    local display = item.name or "Item"
+    if item.type == "Pet" then
+        display = string.format("%s L%d [%s]", item.name, item.level or 1, item.trait or "Trait")
+    end
     for _, slot in ipairs(invState.Slots) do
         if slot.Text == "[Empty]" then
-            slot.Text = name
+            slot.Text = display
             slot.TextColor3 = COLORS.White
+            slot.ItemData = item
             UIController.State.InventorySlots = UIController.State.InventorySlots + 1
             updateDebug()
             return true
@@ -304,8 +315,10 @@ end
 
 toggleInventory = function()
     if invState.Visible then
+        UIController.State.LastEvent = "InventoryClose"
         closeInventory()
     else
+        UIController.State.LastEvent = "InventoryOpen"
         openInventory()
     end
 end
@@ -327,8 +340,8 @@ UserInputService.InputBegan:Connect(function(input, gpe)
 end)
 
 UIController.Events.ToggleInventory.Event:Connect(toggleInventory)
-UIController.Events.AddToInventory.Event:Connect(function(itemName)
-    addItem(itemName)
+UIController.Events.AddToInventory.Event:Connect(function(item)
+    addItem(item)
 end)
 
 ---------------------------------------------------------------

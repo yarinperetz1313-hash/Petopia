@@ -6,7 +6,7 @@ local function send()
     AutoSave:FireServer(UIController.State)
 end
 
-UIController.Events.PetBuxChanged.Event:Connect(send)
+UIController.Events.BalanceChanged.Event:Connect(send)
 UIController.Events.SettingsChanged.Event:Connect(send)
 UIController.Events.AddToInventory.Event:Connect(send)
 
@@ -25,5 +25,5 @@ AutoSave.OnClientEvent:Connect(function(data)
     if data.DebugEnabled ~= nil then UIController.State.DebugEnabled = data.DebugEnabled end
     if data.GraphicsHigh ~= nil then UIController.State.GraphicsHigh = data.GraphicsHigh end
     if data.Keybinds then UIController.State.Keybinds = data.Keybinds end
-    UIController.Events.SettingsChanged:Fire(UIController.State)
+    UIController.Fire("SettingsChanged", UIController.State)
 end)

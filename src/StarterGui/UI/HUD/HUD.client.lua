@@ -21,6 +21,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ModulesFolder = ReplicatedStorage:WaitForChild("Modules")
 local UIController = require(ModulesFolder:WaitForChild("UIController"))
+local EconomyClient = require(ModulesFolder:WaitForChild("EconomyClient"))
 assert(UIController, "UIController module missing")
 
 local COLORS = {
@@ -36,7 +37,7 @@ mainGui.IgnoreGuiInset = true
 local balanceLabel
 local debugLabel
 
-local function makeButton(name, text, event, order)
+local function makeButton(name, text, eventName, order)
     local btn = Instance.new("TextButton")
     btn.Name = name
     btn.Size = UDim2.fromOffset(40,40)
@@ -60,7 +61,11 @@ local function makeButton(name, text, event, order)
         btn.BackgroundColor3 = COLORS.Blue
     end)
     btn.Activated:Connect(function()
-        event:Fire()
+        UIController.Fire(eventName)
+        TweenService:Create(btn, TweenInfo.new(0.1), {Size = UDim2.fromOffset(44,44)}):Play()
+        task.delay(0.1, function()
+            TweenService:Create(btn, TweenInfo.new(0.1), {Size = UDim2.fromOffset(40,40)}):Play()
+        end)
     end)
 end
 
@@ -81,14 +86,14 @@ balanceLabel.TextXAlignment = Enum.TextXAlignment.Right
 balanceLabel.Text = "🪙 PetBux: 0"
 balanceLabel.Parent = mainGui
 
-makeButton("ShopButton","💎",UIController.Events.ToggleShop,1)
-makeButton("InventoryButton","🎒",UIController.Events.ToggleInventory,2)
-makeButton("SettingsButton","⚙",UIController.Events.ToggleSettings,3)
+makeButton("ShopButton","💎","ToggleShop",1)
+makeButton("InventoryButton","🎒","ToggleInventory",2)
+makeButton("SettingsButton","⚙","ToggleSettings",3)
 
 ------------------------------
 -- 3. Event Wiring -----------
 ------------------------------
-UIController.Events.PetBuxChanged.Event:Connect(function(amount)
+UIController.Events.BalanceChanged.Event:Connect(function(amount)
     balanceLabel.Text = string.format("🪙 PetBux: %,d", amount)
 end)
 
@@ -122,13 +127,17 @@ RunService.RenderStepped:Connect(function()
     if not UIController.State.DebugEnabled then return end
     local s = UIController.State
     debugLabel.Text = string.format(
-        "PetBux: %d | Shop: %s (Tab: %s, Items: %d) | Inventory: %s (Slots: %d/%d) | Settings: %s | Marketplace: %s",
+        "PetBux: %d | Shop: %s (Tab: %s, Items: %d) | Inventory: %s (Slots: %d/%d) | Settings: %s | Marketplace: %s | Last: %s",
         s.PetBux,
         tostring(s.ShopOpen), s.ShopTab, s.ShopItems or 0,
         tostring(s.InventoryOpen), s.InventorySlots or 0, s.InventoryCapacity or 0,
         tostring(s.SettingsOpen),
-        s.MarketplaceState or "idle"
+        s.MarketplaceState or "idle",
+        s.LastEvent or "none"
     )
+    if s.ActivePet then
+        debugLabel.Text = debugLabel.Text .. string.format("\nPet: %s", s.ActivePet)
+    end
 end)
 
 -- starting demo balance

@@ -19,28 +19,25 @@
       }
     },
     "StarterGui": {
-      "UI": {
-        "$className": "Folder",
-        "MainMenu": {
-          "$className": "ScreenGui",
-          "$path": "src/StarterGui/UI/MainMenu"
-        },
-        "Shop": {
-          "$className": "ScreenGui",
-          "$path": "src/StarterGui/UI/Shop"
-        },
-        "Inventory": {
-          "$className": "ScreenGui",
-          "$path": "src/StarterGui/UI/Inventory"
-        },
-        "HUD": {
-          "$className": "ScreenGui",
-          "$path": "src/StarterGui/UI/HUD"
-        },
-        "Settings": {
-          "$className": "ScreenGui",
-          "$path": "src/StarterGui/UI/Settings"
-        }
+      "MainMenu": {
+        "$className": "ScreenGui",
+        "$path": "src/StarterGui/UI/MainMenu"
+      },
+      "Shop": {
+        "$className": "ScreenGui",
+        "$path": "src/StarterGui/UI/Shop"
+      },
+      "Inventory": {
+        "$className": "ScreenGui",
+        "$path": "src/StarterGui/UI/Inventory"
+      },
+      "HUD": {
+        "$className": "ScreenGui",
+        "$path": "src/StarterGui/UI/HUD"
+      },
+      "Settings": {
+        "$className": "ScreenGui",
+        "$path": "src/StarterGui/UI/Settings"
       }
     },
     "StarterPlayer": {
